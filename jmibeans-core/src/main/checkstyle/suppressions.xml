@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+ "-//Checkstyle//DTD SuppressionFilter Configuration 1.0//EN"
+ "https://checkstyle.org/dtds/suppressions_1_0.dtd">
+<suppressions>
+
+    <suppress checks="AbbreviationAsWordInName" files="SSHCredentialRepository.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHCredentialRepositoryConstructor.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSession.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionAuthenticationContext.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionClosed.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionConstructor.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionFile.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionFileAttached.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionFileDetached.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionFileState.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionFileStateChanger.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionIdentity.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionIdentityConstructor.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionPasswordMapper.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionReady.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionState.java" lines="1-9999"/>
+    <suppress checks="AbbreviationAsWordInName" files="SSHMachineSessionStateChanger.java" lines="1-9999"/>
+    
+    <suppress checks="OverloadMethodsDeclarationOrder" files="SSHMachineSessionReady.java" lines="1-9999"/>
+    
+    <suppress checks="VariableDeclarationUsageDistance" files="SSHMachineSessionReady.java" lines="1-9999"/>
+    
+</suppressions>
