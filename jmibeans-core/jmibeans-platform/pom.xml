@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>com.github.codeteapot.jmibeans</groupId>
+        <artifactId>jmibeans-core</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+    
+    <artifactId>jmibeans-platform</artifactId>
+    <packaging>jar</packaging>
+    
+    <name>JMI Beans Platform</name>
+    <description>Interfaces for platform bean development</description>
+    <url>https://github.com/codeteapot/jmibeans</url>
+    
+    <dependencies>
+    
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.7.0</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.7.0</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>3.5.13</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.17.2</version>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>
+    
+    <profiles>
+        <profile>
+        
+            <id>documentation</id>
+            
+            <distributionManagement>
+                <site>
+                    <id>github</id>
+                    <url>scm:git:https://github.com/codeteapot/jmibeans/jmibeans-core/jmibeans-platform</url>
+                </site>
+            </distributionManagement>
+            
+        </profile>
+    </profiles>
+    
+</project>
