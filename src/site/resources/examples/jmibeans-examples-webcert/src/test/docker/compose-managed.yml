@@ -1,0 +1,184 @@
+services:
+
+  web-application:
+    extends:
+      file: compose.yml
+      service: web-application
+    labels:
+      com.github.codeteapot.jmi.group: jmibeans-example
+      com.github.codeteapot.jmi.profile: web
+      com.github.codeteapot.jmi.builder.shell.network: ${COMPOSE_PROJECT_NAME}_jmibeans
+      com.github.codeteapot.jmi.builder.shell.port: 22
+      com.github.codeteapot.jmi.builder.shell.user: apache-adm
+      com.github.codeteapot.jmi.builder.dnsZone: examples.jmibeans.net
+      com.github.codeteapot.jmi.builder.dnsHost: application
+      com.github.codeteapot.jmi.builder.webAvailableConfDir: /etc/apache2/conf-available
+      com.github.codeteapot.jmi.builder.webSiteName: example-ssl
+      com.github.codeteapot.jmi.builder.webCertExtConfigSection: server_cert
+      com.github.codeteapot.jmi.builder.webCertificatePath: /etc/ssl/certs/ssl-cert.pem
+      com.github.codeteapot.jmi.builder.webPrivateKeyAlgorithm: RSA
+      com.github.codeteapot.jmi.builder.webPrivateKeySize: 2048
+      com.github.codeteapot.jmi.builder.webPrivateKeyPath: /etc/ssl/private/ssl-cert.key
+    networks:
+      - jmibeans
+    volumes:
+      - pubkey-repo:/mnt/pubkey-repo:ro
+    environment:
+      - SSH_PUBLIC_KEYS=apache-adm:/mnt/pubkey-repo/jmi.pub
+      
+  web-support:
+    extends:
+      file: compose.yml
+      service: web-support
+    labels:
+      com.github.codeteapot.jmi.group: jmibeans-example
+      com.github.codeteapot.jmi.profile: web
+      com.github.codeteapot.jmi.builder.shell.network: ${COMPOSE_PROJECT_NAME}_jmibeans
+      com.github.codeteapot.jmi.builder.shell.port: 22
+      com.github.codeteapot.jmi.builder.shell.user: apache-adm
+      com.github.codeteapot.jmi.builder.dnsZone: examples.jmibeans.net
+      com.github.codeteapot.jmi.builder.dnsHost: support
+      com.github.codeteapot.jmi.builder.webAvailableConfDir: /etc/apache2/conf-available
+      com.github.codeteapot.jmi.builder.webSiteName: example-ssl
+      com.github.codeteapot.jmi.builder.webCertExtConfigSection: server_cert
+      com.github.codeteapot.jmi.builder.webCertificatePath: /etc/ssl/certs/ssl-cert.pem
+      com.github.codeteapot.jmi.builder.webPrivateKeyAlgorithm: RSA
+      com.github.codeteapot.jmi.builder.webPrivateKeySize: 2048
+      com.github.codeteapot.jmi.builder.webPrivateKeyPath: /etc/ssl/private/ssl-cert.key
+    networks:
+      - jmibeans
+    volumes:
+      - pubkey-repo:/mnt/pubkey-repo:ro
+    environment:
+      - SSH_PUBLIC_KEYS=apache-adm:/mnt/pubkey-repo/jmi.pub
+      
+  casigner:
+    extends:
+      file: compose.yml
+      service: casigner
+    labels:
+      com.github.codeteapot.jmi.group: jmibeans-example
+      com.github.codeteapot.jmi.profile: cert
+      com.github.codeteapot.jmi.builder.shell.network: ${COMPOSE_PROJECT_NAME}_jmibeans
+      com.github.codeteapot.jmi.builder.shell.port: 22
+      com.github.codeteapot.jmi.builder.shell.user: casigner
+      com.github.codeteapot.jmi.builder.caBaseDir: /var/casigner
+    networks:
+      - jmibeans
+    volumes:
+      - pubkey-repo:/mnt/pubkey-repo:ro
+    environment:
+      - SSH_PUBLIC_KEYS=casigner:/mnt/pubkey-repo/jmi.pub
+      
+  dns:
+    extends:
+      file: compose.yml
+      service: dns
+    labels:
+      com.github.codeteapot.jmi.group: jmibeans-example
+      com.github.codeteapot.jmi.profile: dns
+      com.github.codeteapot.jmi.builder.shell.network: ${COMPOSE_PROJECT_NAME}_jmibeans
+      com.github.codeteapot.jmi.builder.shell.port: 22
+      com.github.codeteapot.jmi.builder.shell.user: bind-adm
+      com.github.codeteapot.jmi.builder.dnsZonesScript: /var/lib/bind/zones.sh
+      com.github.codeteapot.jmi.builder.dnsZone: examples.jmibeans.net
+      com.github.codeteapot.jmi.builder.dnsNetwork: ${COMPOSE_PROJECT_NAME}_jmibeans
+    networks:
+      - jmibeans
+    volumes:
+      - pubkey-repo:/mnt/pubkey-repo:ro
+      - $PWD/containers/dns/zones.sh:/var/lib/bind/zones.sh:ro
+    environment:
+      - SSH_PUBLIC_KEYS=bind-adm:/mnt/pubkey-repo/jmi.pub
+      
+  listener:
+    image: openjdk:11
+    ports:
+      - 9009:9009
+    command: |
+      java
+        -Djava.util.logging.config.file=/app/logging.properties
+        -Dcom.github.codeteapot.example.dnsZoneName=examples.jmibeans.net
+        -Dcom.github.codeteapot.example.shellPublicKeyRepositoryHost=pubkey-repo
+        -Dcom.github.codeteapot.example.shellPublicKeyRepositoryUser=pubkey
+        -Dcom.github.codeteapot.example.shellPublicKeyRepositoryPasswordFile=/run/secrets/ftp-pass
+        -Dcom.github.codeteapot.example.shellPublicKeyRepositoryPath=/jmi.pub
+        -Dcom.github.codeteapot.example.ports.local=DOCKER
+        -Dcom.github.codeteapot.example.ports.local.group=jmibeans-example
+        -Dcom.github.codeteapot.example.ports.local.targetHost=docker-sock
+        -Dcom.github.codeteapot.example.ports.local.targetPort=2375
+        -agentlib:jdwp=transport=dt_socket,address=*:9009,server=y,$JDWP_SERVER_PARAMS
+        -jar /app/$ARTIFACT_NAME.jar
+    secrets:
+      - ftp-pass
+    networks:
+      - jmibeans
+      - pubkey
+      - docker
+    volumes:
+      - $PWD/containers/listener/app:/app
+      - $PWD/logging.properties:/app/logging.properties:ro
+    environment:
+      - JMI_PROFILE_DNS=dns
+      - JMI_PROFILE_CERT=cert
+      - JMI_PROFILE_WEB=web
+    depends_on:
+      - pubkey-repo
+      - docker-sock
+      
+  pubkey-repo:
+    build:
+      context: images
+      dockerfile_inline: |
+        FROM garethflowers/ftp-server
+        RUN cp /docker-entrypoint.sh /tmp/docker-entrypoint.sh
+        RUN ( \
+          echo '#!/bin/sh'; \
+          echo 'FTP_PASS=$(cat $$FTP_PASS_FILE)'; \
+          cat /tmp/docker-entrypoint.sh \
+        ) >/docker-entrypoint.sh
+        RUN rm /tmp/docker-entrypoint.sh
+    secrets:
+        - ftp-pass
+    networks:
+      - pubkey
+    volumes:
+      - pubkey-repo:/home/pubkey:rw
+    environment:
+      - FTP_USER=pubkey
+      - FTP_PASS_FILE=/run/secrets/ftp-pass
+    attach: false
+      
+  docker-sock:
+    image: tecnativa/docker-socket-proxy
+    privileged: true
+    networks:
+      - docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - INFO=1
+      - EVENTS=1
+      - CONTAINERS=1
+    attach: false
+
+networks:
+  
+  jmibeans:
+    external: false
+    
+  pubkey:
+    external: false
+    
+  docker:
+    external: false
+
+secrets:
+
+  ftp-pass:
+    environment: FTP_PASS
+
+volumes:
+
+  pubkey-repo:
+    external: false

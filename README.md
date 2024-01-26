@@ -3,4 +3,4 @@
 
 # Java Mutable Infrastructure (JMI) Beans
 
-Visit [project site](https://codeteapot.github.io/jmibeans/v0.1.0-SNAPSHOT) to see full documentation.
+Visit [project site](https://codeteapot.github.io/jmibeans/v0.2.0-SNAPSHOT) to see full documentation.

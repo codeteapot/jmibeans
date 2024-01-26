@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>com.github.codeteapot.jmibeans</groupId>
+        <artifactId>jmibeans-light</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+    
+    <artifactId>jmibeans-port-light</artifactId>
+    <packaging>jar</packaging>
+    
+    <name>JMI Beans Port Light</name>
+    <description>Light support for Core Port</description>
+    <url>https://github.com/codeteapot/jmibeans</url>
+    
+    <dependencies>
+    
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-port</artifactId>
+        </dependency>
+        
+    </dependencies>
+    
+    <reporting>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>com.github.codeteapot.jmibeans.port</excludePackageNames>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </reporting>
+    
+</project>

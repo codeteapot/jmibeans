@@ -1,0 +1,61 @@
+[ ca ]
+
+default_ca              = CA_default
+
+[ CA_default ]
+
+dir                     = ${ENV::BUILDDIR}/root
+certs                   = $dir/certs
+new_certs_dir           = $dir/newcerts
+database                = $dir/index.txt
+serial                  = $dir/private/serial
+RANDFILE                = $dir/private/.rand
+
+certificate             = $dir/certs/cert.pem
+private_key             = $dir/private/key.pem
+
+default_md              = sha256
+
+name_opt                = ca_default
+cert_opt                = ca_default
+default_days            = 375
+preserve                = no
+policy                  = policy_test
+
+[ policy_test ]
+
+countryName             = optional
+stateOrProvinceName     = optional
+organizationName        = match
+organizationalUnitName  = match
+commonName              = supplied
+emailAddress            = optional
+
+[ req ]
+
+default_bits            = 2048
+distinguished_name      = req_distinguished_name
+string_mask             = utf8only
+
+default_md              = sha256
+
+x509_extensions         = v3_ca
+
+[ req_distinguished_name ]
+
+organizationName        = "JMI Beans Examples"
+organizationalUnitName  = "Development"
+
+[ v3_ca ]
+
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always,issuer
+basicConstraints        = critical, CA:true
+keyUsage                = critical, digitalSignature, cRLSign, keyCertSign
+
+[ v3_intermediate_ca ]
+
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always,issuer
+basicConstraints        = critical, CA:true, pathlen:0
+keyUsage                = critical, digitalSignature, cRLSign, keyCertSign

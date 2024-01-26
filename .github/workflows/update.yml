@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
       
 jobs:
 
@@ -38,6 +40,24 @@ jobs:
           git config --global user.email codeteapot@gmail.com
           
           mvn -B -DskipTests install
-          mvn -B -Pgh-pages-deployer site-deploy
+          mvn -B -Pgithub site-deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  create-release-draft:
+    name: Create release draft
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Create draft
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          draft: true
+          prerelease: false

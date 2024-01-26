@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>com.github.codeteapot.jmibeans</groupId>
+        <artifactId>jmibeans</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+    
+    <artifactId>jmibeans-light</artifactId>
+    <packaging>pom</packaging>
+    
+    <name>JMI Beans Light</name>
+    <description>Light support for Core modules</description>
+    <url>https://github.com/codeteapot/jmibeans</url>
+    
+    <modules>
+        <module>jmibeans-adapter-light</module>
+        <module>jmibeans-platform-light</module>
+        <module>jmibeans-port-light</module>
+        <module>jmibeans-profile-light</module>
+    </modules>
+    
+    <dependencies>
+    	
+    	<!-- Javadoc dependency sources -->
+    	<dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-adapter</artifactId>
+        </dependency>
+    	
+    </dependencies>
+
+    <reporting>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <offlineLinks>
+                        <offlineLink>
+                            <url>https://codeteapot.github.io/jmibeans/v${project.version}/jmibeans-core/apidocs/</url>
+                            <location>${project.parent.basedir}/jmibeans-core/target/site/apidocs</location>
+                        </offlineLink>
+                    </offlineLinks>
+                    <detectOfflineLinks>false</detectOfflineLinks>
+                    <excludePackageNames>com.github.codeteapot.jmibeans</excludePackageNames>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <!--report>javadoc</report-->
+                            <!--report>test-javadoc</report-->
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>aggregate</id>
+                        <inherited>false</inherited>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+
+        </plugins>
+    </reporting>
+    
+</project>

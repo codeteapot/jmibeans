@@ -1,0 +1,43 @@
+[ ca ]
+
+default_ca              = CA_default
+
+[ CA_default ]
+
+dir                     = /var/casigner
+certs                   = $dir/certs
+new_certs_dir           = $dir/newcerts
+database                = $dir/index.txt
+serial                  = $dir/private/serial
+RANDFILE                = $dir/private/.rand
+
+certificate             = $dir/certs/signer-cert.pem
+private_key             = $dir/private/signer-key.pem
+
+default_md              = sha256
+
+name_opt                = ca_default
+cert_opt                = ca_default
+default_days            = 375
+preserve                = no
+policy                  = policy_test
+
+# Extension copying option: use with caution
+copy_extensions         = copy
+
+[ policy_test ]
+
+countryName             = optional
+stateOrProvinceName     = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ server_cert ]
+
+basicConstraints        = CA:FALSE
+nsCertType              = server
+nsComment               = "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid,issuer:always
+keyUsage                = critical, digitalSignature, keyEncipherment
+extendedKeyUsage        = serverAuth

@@ -1,0 +1,28 @@
+services:
+
+  web-application:
+    build:
+      context: images
+      dockerfile: httpd.dockerfile
+    volumes:
+      - $PWD/containers/web-application:/var/www/html:ro
+      
+  web-support:
+    build:
+      context: images
+      dockerfile: httpd.dockerfile
+    volumes:
+      - $PWD/containers/web-support:/var/www/html:ro
+      
+  casigner:
+    build:
+      context: images
+      dockerfile: casigner.dockerfile
+      
+  dns:
+    build:
+      context: images
+      dockerfile: dns.dockerfile
+    ports:
+      - 53:53
+      - 53:53/udp
