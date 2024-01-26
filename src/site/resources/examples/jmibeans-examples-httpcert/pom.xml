@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>com.github.codeteapot.jmibeans.examples</groupId>
+    <artifactId>jmibeans-examples-httpcert</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0</version>
+    
+    <name>JMI Beans Examples - HTTP Cert</name>
+    <description>HTTP server using issued certificate</description>
+    <url>https://github.com/codeteapot/jmibeans</url>
+    
+    <dependencies>
+    
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-adapter</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-port-docker</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-shell</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-shell-client</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-shell-pool</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-shell-user</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
+        </dependency>
+        
+    </dependencies>
+    
+    <build>
+        <plugins>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>libs/</classpathPrefix>
+                            <mainClass>com.github.codeteapot.jmibeans.examples.httpcert.Application</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.7.1</version>
+                <executions>
+                    <execution>
+                        <id>application-dependencies</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <outputDirectory>${test.docker.applicationDirectory}/libs</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>docker-resources</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <outputDirectory>${test.docker.outputDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${test.docker.sourceDirectory}</directory>
+                                    <filtering>false</filtering>
+                                    <excludes>
+                                        <exclude>environment.conf</exclude>
+                                    </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${test.docker.sourceDirectory}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>environment.conf</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>application-resources</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>install</phase>
+                        <configuration>
+                            <outputDirectory>${test.docker.applicationDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}</directory>
+                                    <include>${project.artifactId}-${project.version}.jar</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+        </plugins>
+        <pluginManagement>
+            <plugins>
+
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-dependency-plugin</artifactId>
+                                        <versionRange>[3.7,)</versionRange>
+                                        <goals>
+                                            <goal>copy-dependencies</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+    </build>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <test.docker.sourceDirectory>${basedir}/src/test/docker</test.docker.sourceDirectory>
+        <test.docker.outputDirectory>${project.build.directory}/test-docker</test.docker.outputDirectory>
+        <test.docker.applicationDirectory>${test.docker.outputDirectory}/containers/listener/app</test.docker.applicationDirectory>
+    </properties>
+    
+</project>

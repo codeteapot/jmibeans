@@ -8,10 +8,10 @@
     
     <groupId>com.github.codeteapot.jmibeans</groupId>
     <artifactId>jmibeans</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     
-    <name>Java Mutable Infrastructure (JMI) Beans</name>
+    <name>JMI Beans</name>
     <description>Mutable infrastructure management using Java Beans</description>
     <url>https://github.com/codeteapot/jmibeans</url>
     
@@ -46,7 +46,10 @@
     <modules>
         <module>jmibeans-core</module>
         <module>jmibeans-port-docker</module>
-        <module>jmibeans-testing-session</module>
+        <module>jmibeans-interact</module>
+        <module>jmibeans-interact-testing</module>
+        <!--module>jmibeans-core-old</module--> <!-- TODO Remove it -->
+        <!--module>jmibeans-port-docker-old</module--> <!-- TODO Remove it -->
     </modules>
     
     <build>
@@ -54,57 +57,239 @@
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.9.1</version>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
             </plugin>
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.0.0</version>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <excludedGroups>integration</excludedGroups>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M5</version>
                 <executions>
-                    <!-- mvn antrun:run@release-commit -->
                     <execution>
-                        <id>release-commit</id>
+                        <id>default-integration-test</id>
                         <goals>
-                            <goal>run</goal>
+                            <goal>integration-test</goal>
                         </goals>
-                        <inherited>false</inherited>
                         <configuration>
-                            <target>
-                                <exec executable="git">
-                                    <arg value="commit"/>
-                                    <arg value="-m"/>
-                                    <arg value="Release ${release.tag}"/>
-                                </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <!-- mvn antrun:run@release-tag -->
-                    <execution>
-                        <id>release-tag</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <inherited>false</inherited>
-                        <configuration>
-                            <target>
-                                <exec executable="git" failonerror="true">
-                                    <arg value="tag"/>
-                                    <arg value="${release.tag}"/>
-                                </exec>
-                                <exec executable="git">
-                                    <arg value="push"/>
-                                    <arg value="${release.remoteName}"/>
-                                    <arg value="${release.tag}"/>
-                                </exec>
-                            </target>
+                            <groups>integration</groups>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <skipAfterFailureCount>1</skipAfterFailureCount>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
             
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>3.3.2</version>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!--
+                Comment for Eclipse users
+                
+                Respect intentionally wrapped lines even automatic formatting.
+                
+                To avoid remove line breaks, check "Never join already wrapped lines" at "Line
+                Wrapping" section of Java > Code Style > Formatter preference page.
+                
+                You can download Google Style Formatter from
+                https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.1.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>8.41</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>https://raw.githubusercontent.com/checkstyle/checkstyle/cd9cf0081ef295b9902c8c7074d3fb46a1e4d408/src/main/resources/google_checks.xml</configLocation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <failsOnError>true</failsOnError>
+                            <failOnViolation>true</failOnViolation>
+                            <violationSeverity>warning</violationSeverity>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>COMPLEXITY</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>1.00</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                                <rule>
+                                    <element>CLASS</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>1.00</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>1.00</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.9.1</version>
+            </plugin>
+            
         </plugins>
+        <pluginManagement>
+            <plugins>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.5.0</version>
+                    <configuration>
+                        <windowtitle>${project.name} API</windowtitle>
+                        <doctitle>${project.name} API</doctitle>
+                        <charset>UTF-8</charset>
+                        <javaApiLinks>
+                            <property>
+                                <name>api_1.8</name>
+                                <value>https://docs.oracle.com/javase/8/docs/api/</value>
+                            </property>
+                        </javaApiLinks>
+                        <links>
+                            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+                        </links>
+                        <tags>
+                            <tag>
+                                <name>.implNote</name>
+                                <placement>m</placement>
+                                <head>Implementation Note:</head>
+                            </tag>
+                        </tags>
+                    </configuration>
+                </plugin>
+                
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-jxr-plugin</artifactId>
+                                        <versionRange>[3.3,)</versionRange>
+                                        <goals>
+                                            <goal>aggregate</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-checkstyle-plugin</artifactId>
+                                        <versionRange>[3.1,)</versionRange>
+                                        <goals>
+                                            <goal>check</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
     </build>
     
     <reporting>
@@ -134,13 +319,211 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <release.remoteName>origin</release.remoteName>
         <release.tag>v${project.version}</release.tag>
-        <checkstyle.configLocation>https://raw.githubusercontent.com/checkstyle/checkstyle/cd9cf0081ef295b9902c8c7074d3fb46a1e4d408/src/main/resources/google_checks.xml</checkstyle.configLocation>
     </properties>
+    
+    <dependencyManagement>
+        <dependencies>
+        
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-adapter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-machine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-platform</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-port</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-port-docker</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-profile</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-shell</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-shell-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-shell-pool</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-shell-user</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.jmibeans</groupId>
+                <artifactId>jmibeans-testing-shell</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>5.7.0</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>5.7.0</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>3.5.13</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.github.codeteapot.testing</groupId>
+                <artifactId>javase-testing-logging-junit-jupiter</artifactId>
+                <version>0.1.7</version>
+                <scope>test</scope>
+            </dependency>
+    
+            <dependency>
+                <groupId>com.github.codeteapot.testing</groupId>
+                <artifactId>javase-testing-logging-hamcrest</artifactId>
+                <version>0.1.7</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>3.17.2</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+                <version>2.2</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>4.2.0</version>
+                <scope>test</scope>
+            </dependency>
+            
+        </dependencies>
+    </dependencyManagement>
     
     <profiles>
         <profile>
         
-            <id>gpg-signer</id>
+            <id>development</id>
+            
+            <modules>
+                <module>jacoco-report</module>
+            </modules>
+            
+            <build>
+                <plugins>
+                    
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-check</id>
+                                <configuration>
+                                    <failsOnError>false</failsOnError>
+                                    <failOnViolation>false</failOnViolation>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-check</id>
+                                <configuration>
+                                    <haltOnFailure>false</haltOnFailure>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    
+                </plugins>
+            </build>
+            
+            <reporting>
+                <plugins>
+                    
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>checkstyle-aggregate</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                    
+                </plugins>
+            </reporting>
+            
+        </profile>
+        <profile>
+        
+            <id>delivery</id>
+            
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+                </repository>
+            </distributionManagement>
             
             <build>
                 <plugins>
@@ -163,27 +546,6 @@
                         </executions>
                     </plugin>
                     
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-        
-            <id>ossrh-deployer</id>
-            
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-                <repository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-                </repository>
-            </distributionManagement>
-            
-            <build>
-                <plugins>
-                
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -202,7 +564,7 @@
         </profile>
         <profile>
         
-            <id>gh-pages-deployer</id>
+            <id>github</id>
             
             <distributionManagement>
                 <site>
@@ -250,7 +612,7 @@
                         <version>3.0.0</version>
                         <executions>
                             <execution>
-                                <id>site-deploy</id>
+                                <id>gh-pages</id>
                                 <goals>
                                     <goal>publish-scm</goal>
                                 </goals>
@@ -278,7 +640,7 @@
                             <artifactId>maven-scm-publish-plugin</artifactId>
                             <executions>
                                 <execution>
-                                    <id>site-deploy</id>
+                                    <id>gh-pages</id>
                                     <goals>
                                         <goal>publish-scm</goal>
                                     </goals>

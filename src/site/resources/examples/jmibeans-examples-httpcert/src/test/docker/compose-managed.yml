@@ -1,0 +1,159 @@
+services:
+
+  httpd-s1:
+    extends:
+      file: compose.yml
+      service: httpd-s1
+    labels:
+      com.github.codeteapot.jmi.group: jmibeans-example
+      com.github.codeteapot.jmi.role: http-server
+      com.github.codeteapot.jmi.builder.shellNetwork: ${COMPOSE_PROJECT_NAME}_jmibeans
+      com.github.codeteapot.jmi.builder.shellPort: 22
+      com.github.codeteapot.jmi.builder.shellAdminUser: apache-adm
+      com.github.codeteapot.jmi.builder.dnsNetwork: ${COMPOSE_PROJECT_NAME}_jmibeans
+    networks:
+      - jmibeans
+    volumes:
+      - pubkey-repo:/mnt/pubkey-repo:ro
+    environment:
+      - SSH_PUBLIC_KEYS=apache-adm:/mnt/pubkey-repo/jmi.pub
+      
+  httpd-s2:
+    extends:
+      file: compose.yml
+      service: httpd-s2
+    labels:
+      com.github.codeteapot.jmi.group: jmibeans-example
+      com.github.codeteapot.jmi.role: http-server
+      com.github.codeteapot.jmi.builder.shellNetwork: ${COMPOSE_PROJECT_NAME}_jmibeans
+      com.github.codeteapot.jmi.builder.shellPort: 22
+      com.github.codeteapot.jmi.builder.shellAdminUser: apache-adm
+      com.github.codeteapot.jmi.builder.dnsNetwork: ${COMPOSE_PROJECT_NAME}_jmibeans
+    networks:
+      - jmibeans
+    volumes:
+      - pubkey-repo:/mnt/pubkey-repo:ro
+    environment:
+      - SSH_PUBLIC_KEYS=apache-adm:/mnt/pubkey-repo/jmi.pub
+      
+  casigner:
+    extends:
+      file: compose.yml
+      service: casigner
+    labels:
+      com.github.codeteapot.jmi.group: jmibeans-example
+      com.github.codeteapot.jmi.role: cert-auth
+      com.github.codeteapot.jmi.builder.shellNetwork: ${COMPOSE_PROJECT_NAME}_jmibeans
+      com.github.codeteapot.jmi.builder.shellPort: 22
+      com.github.codeteapot.jmi.builder.shellCertUser: casigner
+    networks:
+      - jmibeans
+    volumes:
+      - pubkey-repo:/mnt/pubkey-repo:ro
+    environment:
+      - SSH_PUBLIC_KEYS=casigner:/mnt/pubkey-repo/jmi.pub
+      
+  dns:
+    extends:
+      file: compose.yml
+      service: dns
+    labels:
+      com.github.codeteapot.jmi.group: jmibeans-example
+      com.github.codeteapot.jmi.role: name-server
+      com.github.codeteapot.jmi.builder.shellNetwork: ${COMPOSE_PROJECT_NAME}_jmibeans
+      com.github.codeteapot.jmi.builder.shellPort: 22
+      com.github.codeteapot.jmi.builder.shellAdminUser: bind-adm
+    networks:
+      - jmibeans
+    volumes:
+      - pubkey-repo:/mnt/pubkey-repo:ro
+    environment:
+      - SSH_PUBLIC_KEYS=bind-adm:/mnt/pubkey-repo/jmi.pub
+      
+  listener:
+    image: openjdk:11
+    ports:
+      - 9009:9009
+    command: |
+      java
+      -Djava.util.logging.config.file=/app/logging.properties
+      -Dcom.github.codeteapot.example.shellPublicKeyRepositoryHost=pubkey-repo
+      -Dcom.github.codeteapot.example.shellPublicKeyRepositoryUser=pubkey
+      -Dcom.github.codeteapot.example.shellPublicKeyRepositoryPasswordFile=/run/secrets/ftp-pass
+      -Dcom.github.codeteapot.example.shellPublicKeyRepositoryPath=/jmi.pub
+      -Dcom.github.codeteapot.example.dockerPortGroup=jmibeans-example
+      -Dcom.github.codeteapot.example.dockerPortTargetHost=docker-sock
+      -Dcom.github.codeteapot.example.dockerPortTargetPort=2375
+      -Dcom.github.codeteapot.example.dockerPortNameServerRole=name-server
+      -Dcom.github.codeteapot.example.dockerPortCertAuthRole=cert-auth
+      -Dcom.github.codeteapot.example.dockerPortHttpServerRole=http-server
+      -agentlib:jdwp=transport=dt_socket,address=*:9009,server=y,$JDWP_SERVER_PARAMS
+      -jar
+      /app/$ARTIFACT_NAME.jar
+    secrets:
+      - ftp-pass
+    networks:
+      - jmibeans
+      - pubkey
+      - docker
+    volumes:
+      - $PWD/containers/listener/app:/app
+      - $PWD/logging.properties:/app/logging.properties:ro
+    depends_on:
+      - pubkey-repo
+      - docker-sock
+      
+  pubkey-repo:
+    build:
+      context: images
+      dockerfile_inline: |
+        FROM garethflowers/ftp-server
+        RUN cp /docker-entrypoint.sh /tmp/docker-entrypoint.sh
+        RUN ( \
+          echo '#!/bin/sh'; \
+          echo 'FTP_PASS=$(cat $$FTP_PASS_FILE)'; \
+          cat /tmp/docker-entrypoint.sh \
+        ) >/docker-entrypoint.sh
+        RUN rm /tmp/docker-entrypoint.sh
+    secrets:
+        - ftp-pass
+    networks:
+      - pubkey
+    volumes:
+      - pubkey-repo:/home/pubkey:rw
+    environment:
+      - FTP_USER=pubkey
+      - FTP_PASS_FILE=/run/secrets/ftp-pass
+      
+  docker-sock:
+    image: tecnativa/docker-socket-proxy
+    privileged: true
+    networks:
+      - docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - INFO=1
+      - EVENTS=1
+      - CONTAINERS=1
+
+networks:
+  
+  jmibeans:
+    external: false
+    
+  pubkey:
+    external: false
+    
+  docker:
+    external: false
+
+secrets:
+
+  ftp-pass:
+    environment: FTP_PASS
+
+volumes:
+
+  pubkey-repo:
+    external: false

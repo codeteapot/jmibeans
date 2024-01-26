@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.github.codeteapot.jmibeans</groupId>
+        <artifactId>jmibeans</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jmibeans-interact</artifactId>
+    <packaging>pom</packaging>
+
+    <name>JMI Beans Interact</name>
+    <description>Tools for interaction between beans and machines</description>
+    <url>https://github.com/codeteapot/jmibeans</url>
+
+    <modules>
+        <module>jmibeans-shell</module>
+        <module>jmibeans-shell-client</module>
+        <module>jmibeans-shell-pool</module>
+        <module>jmibeans-shell-user</module>
+    </modules>
+
+    <reporting>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <offlineLinks>
+                        <offlineLink>
+                            <url>https://codeteapot.github.io/jmibeans/v${project.version}/jmibeans-core/apidocs/</url>
+                            <location>${project.parent.basedir}/jmibeans-core/target/site/apidocs</location>
+                        </offlineLink>
+                    </offlineLinks>
+                    <detectOfflineLinks>false</detectOfflineLinks>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <!--report>javadoc</report-->
+                            <!--report>test-javadoc</report-->
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>aggregate</id>
+                        <inherited>false</inherited>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+
+        </plugins>
+    </reporting>
+
+</project>

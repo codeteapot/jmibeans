@@ -1,0 +1,28 @@
+services:
+
+  httpd-s1:
+    build:
+      context: images
+      dockerfile: httpd.dockerfile
+    volumes:
+      - $PWD/containers/httpd-s1/server-name.conf:/etc/apache2/conf-available/server-name.conf:ro
+      
+  httpd-s2:
+    build:
+      context: images
+      dockerfile: httpd.dockerfile
+    volumes:
+      - $PWD/containers/httpd-s2/server-name.conf:/etc/apache2/conf-available/server-name.conf:ro
+      
+  casigner:
+    build:
+      context: images
+      dockerfile: casigner.dockerfile
+      
+  dns:
+    build:
+      context: images
+      dockerfile: dns.dockerfile
+    ports:
+      - 53:53
+      - 53:53/udp

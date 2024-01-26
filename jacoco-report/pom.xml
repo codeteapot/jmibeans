@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.github.codeteapot.jmibeans</groupId>
+        <artifactId>jmibeans</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jacoco-report</artifactId>
+    <packaging>pom</packaging>
+
+    <name>JMI Beans (JaCoCo Report)</name>
+    <description>JaCoCo Report for JMI Beans</description>
+    <url>https://github.com/codeteapot/jmibeans</url>
+    
+    <dependencies>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-adapter</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-machine</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-platform</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-port</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-port-docker</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-profile</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-shell</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-shell-client</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-shell-pool</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-shell-user</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.codeteapot.jmibeans</groupId>
+            <artifactId>jmibeans-testing-shell</artifactId>
+        </dependency>
+        
+    </dependencies>
+
+    <build>
+        <plugins>
+            
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+        </plugins>
+    </build>
+
+    <reporting>
+        <plugins>
+            
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>report-aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+
+        </plugins>
+    </reporting>
+
+</project>

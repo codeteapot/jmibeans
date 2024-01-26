@@ -1,0 +1,100 @@
+services:
+
+  httpd-s1:
+    extends:
+      file: compose-managed.yml
+      service: httpd-s1
+    hostname: jmibeans-example-httpd-s1
+    ports:
+      - 2201:22
+    environment:
+      - SSH_PUBLIC_KEYS=apache-adm:/mnt/pubkey-repo/jmi.pub,apache-adm:/mnt/pubkey-repo/dev.pub
+      
+  httpd-s2:
+    extends:
+      file: compose-managed.yml
+      service: httpd-s2
+    hostname: jmibeans-example-httpd-s2
+    ports:
+      - 2202:22
+    environment:
+      - SSH_PUBLIC_KEYS=apache-adm:/mnt/pubkey-repo/jmi.pub,apache-adm:/mnt/pubkey-repo/dev.pub
+      
+  casigner:
+    extends:
+      file: compose-managed.yml
+      service: casigner
+    hostname: jmibeans-example-casigner
+    ports:
+      - 2203:22
+    environment:
+      - SSH_PUBLIC_KEYS=casigner:/mnt/pubkey-repo/jmi.pub,casigner:/mnt/pubkey-repo/dev.pub
+      
+  dns:
+    extends:
+      file: compose-managed.yml
+      service: dns
+    hostname: jmibeans-example-dns
+    ports:
+      - 2204:22
+    environment:
+      - SSH_PUBLIC_KEYS=bind-adm:/mnt/pubkey-repo/jmi.pub,bind-adm:/mnt/pubkey-repo/dev.pub
+      
+  listener:
+    extends:
+      file: compose-managed.yml
+      service: listener
+    volumes:
+      - $PWD/logging-dev.properties:/app/logging.properties:ro
+      
+  pubkey-repo:
+    extends:
+      file: compose-managed.yml
+      service: pubkey-repo
+      
+  docker-sock:
+    extends:
+      file: compose-managed.yml
+      service: docker-sock
+      
+  upload-dev-key:
+    build:
+      context: images
+      dockerfile_inline: |
+        FROM debian:bookworm
+        RUN apt -y update
+        RUN apt -y install ftp-upload
+        CMD ftp-upload \
+            --host pubkey-repo \
+            --user pubkey \
+            --password $(cat /run/secrets/ftp-pass) \
+            /mnt/dev.pub && echo 'Development public key uploaded successfully'
+    secrets:
+      - ftp-pass
+    networks:
+      - pubkey
+    volumes:
+      - $DEV_SSH_PUBKEY:/mnt/dev.pub:ro
+    depends_on:
+      - pubkey-repo
+    
+networks:
+  
+  jmibeans:
+    external: false
+    
+  pubkey:
+    external: false
+    
+  docker:
+    external: false
+
+secrets:
+
+  ftp-pass:
+    environment: FTP_PASS
+    
+volumes:
+
+  pubkey-repo:
+    external: false

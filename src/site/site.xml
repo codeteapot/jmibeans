@@ -20,7 +20,11 @@
             <item name="Introduction" href="index.html"/>
             <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0"/>
         </menu>
+        <menu name="Design">
+            <item name="Core perspectives" href="design/core-perspectives.html"/>
+        </menu>
         <menu ref="reports"/>
+        <!-- TODO Add example: jmibeans-examples-http-cert -->
     </body>
     
     <custom>

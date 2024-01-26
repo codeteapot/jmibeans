@@ -5,6 +5,8 @@ import java.net.UnknownHostException;
 
 public class InetAddressCreator {
 
+  private InetAddressCreator() {}
+
   public static InetAddress getLocalHost() {
     try {
       return InetAddress.getLocalHost();
