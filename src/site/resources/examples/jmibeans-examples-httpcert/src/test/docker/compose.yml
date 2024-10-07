@@ -26,3 +26,5 @@ services:
     ports:
       - 53:53
       - 53:53/udp
+    volumes:
+      - $PWD/containers/dns/zones.sh:/var/lib/bind/zones.sh:ro
