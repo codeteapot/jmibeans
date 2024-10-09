@@ -1,8 +1,10 @@
 package com.github.codeteapot.jmibeans.examples.httpcert;
 
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 
 import com.github.codeteapot.jmibeans.machine.MachineAgent;
+import com.github.codeteapot.jmibeans.machine.MachineNetwork;
 import com.github.codeteapot.jmibeans.machine.MachineNetworkBinding;
 import com.github.codeteapot.jmibeans.machine.MachineNetworkName;
 import com.github.codeteapot.jmibeans.profile.MachineBuilderContext;
@@ -22,6 +24,7 @@ import com.github.codeteapot.jmibeans.shell.client.secutity.auth.user.MachineShe
 import com.github.codeteapot.jmibeans.shell.client.secutity.auth.user.MachineShellUserRepository;
 import com.github.codeteapot.jmibeans.shell.mutable.MachineShellConnectionFactoryLifecycle;
 import com.github.codeteapot.jmibeans.shell.mutable.MutableAddressMachineShellConectionFactory;
+import java.beans.PropertyChangeListenerProxy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -29,6 +32,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -86,9 +90,30 @@ public class SimpleShellProvider {
             .map(MachineNetworkName::new)
             .orElseThrow(() -> new MachineBuildingException("Undefined shell network")),
         agent.getNetworks());
-    
-    builderContext.addDisposeAction(() -> agent.removePropertyChangeListener(addressBinding));
-    agent.addPropertyChangeListener(addressBinding);
+    conectionFactory.setAddress(networkBinding.getNetwork()
+        .map(network -> {
+          try {
+            return network.getAddress();
+          } catch (UnknownHostException e) {
+            return null;
+          }
+        })
+        .orElse(null));
+    networkBinding.addPropertyChangeListener(new PropertyChangeListenerProxy("network", event -> {
+      conectionFactory.setAddress(ofNullable(event.getNewValue())
+          .filter(MachineNetwork.class::isInstance)
+          .map(MachineNetwork.class::cast)
+          .map(network -> {
+            try {
+              return network.getAddress();
+            } catch (UnknownHostException e) {
+              return null;
+            }
+          })
+          .orElse(null));
+    }));
+    builderContext.addDisposeAction(() -> agent.removePropertyChangeListener(networkBinding));
+    agent.addPropertyChangeListener(networkBinding);
     return conectionFactory;
   }
 
