@@ -7,10 +7,14 @@ import java.net.InetAddress;
 
 public class DomainNameServerFacet {
 
-  private final MachineShellConnectionFactory shellConnectionFactory;
+  private final MachineShellConnectionFactory connectionFactory;
 
-  DomainNameServerFacet(MachineShellConnectionFactory shellConnectionFactory) {
-    this.shellConnectionFactory = requireNonNull(shellConnectionFactory);
+  DomainNameServerFacet(MachineShellConnectionFactory connectionFactory) {
+    this.connectionFactory = requireNonNull(connectionFactory);
+  }
+
+  public void createZone() {
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
   public void register(String domainName, InetAddress address) {

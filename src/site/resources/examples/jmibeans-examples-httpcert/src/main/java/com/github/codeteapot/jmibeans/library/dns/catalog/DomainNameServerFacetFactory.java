@@ -6,7 +6,7 @@ public class DomainNameServerFacetFactory {
 
   public static final String DNS_REGISTRAR_USER = "dns-registrar";
 
-  public DomainNameServerFacet getFacet(MachineShellConnectionFactory shellConnectionFactory) {
-    return new DomainNameServerFacet(shellConnectionFactory);
+  public DomainNameServerFacet getFacet(MachineShellConnectionFactory connectionFactory) {
+    return new DomainNameServerFacet(connectionFactory);
   }
 }

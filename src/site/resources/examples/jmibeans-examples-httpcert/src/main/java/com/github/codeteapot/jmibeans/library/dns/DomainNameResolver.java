@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.github.codeteapot.jmibeans.library.dns.catalog.DomainNameServerFacet;
 import com.github.codeteapot.jmibeans.library.dns.catalog.DomainNamedFacet;
+import com.github.codeteapot.jmibeans.platform.MachineRef;
 import com.github.codeteapot.jmibeans.platform.PlatformContext;
 import com.github.codeteapot.jmibeans.platform.event.MachineAvailableEvent;
 import com.github.codeteapot.jmibeans.platform.event.MachineLostEvent;
@@ -16,12 +17,11 @@ import java.util.stream.Stream;
 
 public class DomainNameResolver implements PlatformListener {
 
-  private transient final PlatformContext context;
-  private transient final Set<RegisteredDomain> registeredDomains;
+  private final PlatformContext context;
+  private MachineRef serverRef;
 
   public DomainNameResolver(PlatformContext context) {
     this.context = requireNonNull(context);
-    this.registeredDomains = new HashSet<>();
   }
 
   @Override
@@ -66,6 +66,6 @@ public class DomainNameResolver implements PlatformListener {
 
   @Override
   public void machineLost(MachineLostEvent event) {
-    registeredDomains.removeIf(registeredDomain -> registeredDomain.lost(event.getMachineRef()));
+    // registeredDomains.removeIf(registeredDomain -> registeredDomain.lost(event.getMachineRef()));
   }
 }

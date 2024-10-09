@@ -9,8 +9,8 @@ ssh -l bind-adm -p 2204 localhost \
 sudo -u bind nsupdate -v -L 3 << EOF
 server localhost
 zone jmibeans-examples.net
-update delete s1.jmibeans-examples.net
-update add s1.jmibeans-examples.net 300 A $s1_ip
+update delete s1 # s1.jmibeans-examples.net
+update add s1 # s1.jmibeans-examples.net 300 A $s1_ip
 send
 EOF
 ssh -l bind-adm -p 2204 localhost \
