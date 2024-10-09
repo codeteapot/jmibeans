@@ -3,7 +3,7 @@ package com.github.codeteapot.jmibeans.examples.httpcert;
 import static java.lang.String.format;
 
 import com.github.codeteapot.jmibeans.machine.MachineAgent;
-import com.github.codeteapot.jmibeans.machine.MachineNetworkAddressBinding;
+import com.github.codeteapot.jmibeans.machine.MachineNetworkBinding;
 import com.github.codeteapot.jmibeans.machine.MachineNetworkName;
 import com.github.codeteapot.jmibeans.profile.MachineBuilderContext;
 import com.github.codeteapot.jmibeans.profile.MachineBuildingException;
@@ -79,14 +79,14 @@ public class SimpleShellProvider {
                     new MachineShellAuthorizedUsers(userRepository))),
                 PoolingMachineShellConnectionFactory::cleanup));
     MachineAgent agent = builderContext.getAgent();
-    MachineNetworkAddressBinding addressBinding = new MachineNetworkAddressBinding(
+    MachineNetworkBinding networkBinding = new MachineNetworkBinding(
         builderContext.getProperty("shellNetwork")
             .stream()
             .findAny()
             .map(MachineNetworkName::new)
             .orElseThrow(() -> new MachineBuildingException("Undefined shell network")),
-        conectionFactory::setAddress,
         agent.getNetworks());
+    
     builderContext.addDisposeAction(() -> agent.removePropertyChangeListener(addressBinding));
     agent.addPropertyChangeListener(addressBinding);
     return conectionFactory;
