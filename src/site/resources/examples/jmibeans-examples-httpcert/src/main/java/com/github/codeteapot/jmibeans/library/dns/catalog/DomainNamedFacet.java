@@ -10,7 +10,6 @@ import com.github.codeteapot.jmibeans.profile.MachineBuilderContext;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.InetAddress;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -26,12 +25,11 @@ public class DomainNamedFacet {
       Supplier<String> domainNameSupplier) {
     propertyChangeSupport = new PropertyChangeSupport(this);
     this.domainNameSupplier = requireNonNull(domainNameSupplier);
-    address = null;
-    MachineAgent agent = builderContext.getAgent();
     MachineNetworkAddressBinding addressBinding = new MachineNetworkAddressBinding(
         networkName,
-        this::setAddress,
-        agent.getNetworks());
+        this::setAddress);
+    MachineAgent agent = builderContext.getAgent();
+    addressBinding.update(agent.getNetworks());
     builderContext.addDisposeAction(() -> agent.removePropertyChangeListener(addressBinding));
     agent.addPropertyChangeListener(addressBinding);
   }
@@ -53,10 +51,8 @@ public class DomainNamedFacet {
   }
 
   private void setAddress(InetAddress address) {
-    if (!Objects.equals(this.address, address)) {
-      InetAddress oldAddress = this.address;
-      this.address = address;
-      propertyChangeSupport.firePropertyChange("address", oldAddress, this.address);
-    }
+    InetAddress oldAddress = this.address;
+    this.address = address;
+    propertyChangeSupport.firePropertyChange("address", oldAddress, this.address);
   }
 }
