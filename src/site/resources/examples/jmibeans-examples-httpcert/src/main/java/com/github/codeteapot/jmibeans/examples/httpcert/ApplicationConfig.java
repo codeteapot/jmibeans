@@ -20,6 +20,11 @@ class ApplicationConfig {
     properties.load(getClass().getResourceAsStream("application-config.properties"));
   }
 
+  String getDNSZoneName() {
+    return getProperty("dnsZoneName")
+        .orElseThrow(() -> undefinedProperty("dnsZoneName"));
+  }
+
   String getShellPublicKeyRepositoryHost() {
     return getProperty("shellPublicKeyRepositoryHost")
         .orElseThrow(() -> undefinedProperty("shellPublicKeyRepositoryHost"));

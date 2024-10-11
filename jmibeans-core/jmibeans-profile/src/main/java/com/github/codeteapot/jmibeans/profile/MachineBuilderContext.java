@@ -5,10 +5,10 @@ import java.util.Set;
 
 public interface MachineBuilderContext {
 
+  // TODO DESIGN Move to Set<Object>
   Set<String> getProperty(String name);
 
   MachineAgent getAgent();
 
-  // TODO DESIGN Rename it
   void addDisposeAction(MachineDisposeAction action);
 }

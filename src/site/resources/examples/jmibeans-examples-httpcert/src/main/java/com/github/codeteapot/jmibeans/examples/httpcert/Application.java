@@ -4,7 +4,7 @@ import static com.github.codeteapot.jmibeans.examples.httpcert.catalog.certauth 
     .CertificateAuthorityFacetFactory.CERT_ISSUER_USER;
 import static com.github.codeteapot.jmibeans.examples.httpcert.catalog.webserver //
     .WebServerFacetFactory.HTTP_ADMIN_USER;
-import static com.github.codeteapot.jmibeans.library.dns.catalog.DomainNameServerFacetFactory //
+import static com.github.codeteapot.jmibeans.library.dns.catalog.DNSServerFacetFactory //
     .DNS_REGISTRAR_USER;
 import static com.github.codeteapot.jmibeans.platform.Machine.facetFilter;
 import static com.github.codeteapot.jmibeans.platform.Machine.facetGet;
@@ -29,9 +29,10 @@ import com.github.codeteapot.jmibeans.examples.httpcert.catalog.certauth //
     .CertificateAuthorityFacetFactory;
 import com.github.codeteapot.jmibeans.examples.httpcert.catalog.webserver.WebServerFacet;
 import com.github.codeteapot.jmibeans.examples.httpcert.catalog.webserver.WebServerFacetFactory;
-import com.github.codeteapot.jmibeans.library.dns.DomainNameResolver;
-import com.github.codeteapot.jmibeans.library.dns.catalog.DomainNameServerFacetFactory;
-import com.github.codeteapot.jmibeans.library.dns.catalog.DomainNamedFacetFactory;
+import com.github.codeteapot.jmibeans.library.dns.DNSResolver;
+import com.github.codeteapot.jmibeans.library.dns.catalog.DNSHostConfig;
+import com.github.codeteapot.jmibeans.library.dns.catalog.DNSHostFacetFactory;
+import com.github.codeteapot.jmibeans.library.dns.catalog.DNSServerFacetFactory;
 import com.github.codeteapot.jmibeans.machine.MachineNetworkName;
 import com.github.codeteapot.jmibeans.platform.MachineRef;
 import com.github.codeteapot.jmibeans.platform.PlatformContext;
@@ -45,9 +46,11 @@ import com.github.codeteapot.jmibeans.port.docker.DockerTarget;
 import com.github.codeteapot.jmibeans.port.docker.role.DirectMappingDockerProfileResolver;
 import com.github.codeteapot.jmibeans.profile.MachineBuilderResultDefinition;
 import com.github.codeteapot.jmibeans.profile.MachineBuildingException;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 // TODO RENAME Module to jmibeans-examples-webcert
 public class Application implements PlatformListener {
@@ -103,9 +106,7 @@ public class Application implements PlatformListener {
     try {
       webServerFacet.certificatePut(certAuthFacet.issue(webServerFacet.generateKeyPair()));
     } catch (CertificateSigningRequestException | CertificateAuthorityException e) {
-      logger.log(WARNING, new StringBuilder()
-          .append("Certificate not issued for ").append(webServerFacet.getServerName())
-          .toString(), e);
+      logger.log(WARNING, "Certificate not issued", e);
     }
   }
 
@@ -116,6 +117,7 @@ public class Application implements PlatformListener {
     PlatformAdapter adapter = new PlatformAdapter(
         eventQueue,
         catalog(
+            config.getDNSZoneName(),
             new SimpleShellProvider(
                 config.getShellPublicKeyRepositoryHost(),
                 config.getShellPublicKeyRepositoryUser(),
@@ -125,10 +127,10 @@ public class Application implements PlatformListener {
                 config.getShellPublicKeySize()),
             new CertificateAuthorityFacetFactory(),
             new WebServerFacetFactory(),
-            new DomainNamedFacetFactory(),
-            new DomainNameServerFacetFactory()),
+            new DNSHostFacetFactory(),
+            new DNSServerFacetFactory()),
         newCachedThreadPool());
-    eventQueue.addListener(new DomainNameResolver(adapter.getContext()));
+    eventQueue.addListener(new DNSResolver(adapter.getContext(), config.getDNSZoneName()));
     eventQueue.addListener(new Application(adapter.getContext()));
 
     PlatformPort dockerPort = new DockerPlatformPort(
@@ -152,15 +154,16 @@ public class Application implements PlatformListener {
   }
 
   private static MachineCatalog catalog(
+      String dnsZoneName,
       SimpleShellProvider shellProvider,
       CertificateAuthorityFacetFactory certAuthFacetFactory,
       WebServerFacetFactory webServerFacetFactory,
-      DomainNamedFacetFactory domainNamedFacetFactory,
-      DomainNameServerFacetFactory domainNameServerFacetFactory) {
+      DNSHostFacetFactory dnsHostFacetFactory,
+      DNSServerFacetFactory dnsServerFacetFactory) {
     return new MachineCatalogDefinition()
         .withProfile(DNS_PROFILE_NAME, builderContext -> {
           return new MachineBuilderResultDefinition()
-              .withFacet(domainNameServerFacetFactory.getFacet(
+              .withFacet(dnsServerFacetFactory.getFacet(
                   shellProvider.getConnectionFactory(
                       builderContext,
                       new StandaloneIndentityShellUser(
@@ -185,27 +188,30 @@ public class Application implements PlatformListener {
                                   "Undefined CA user name"))))));
         })
         .withProfile(HTTP_PROFILE_NAME, builderContext -> {
-          WebServerFacet webServerFacet = webServerFacetFactory.getFacet(
-              shellProvider.getConnectionFactory(
+          return new MachineBuilderResultDefinition()
+              .withFacet(dnsHostFacetFactory.getFacet(
                   builderContext,
-                  new StandaloneIndentityShellUser(
-                      HTTP_ADMIN_USER,
-                      builderContext.getProperty("shellAdminUser")
+                  Collections.singleton(new DNSHostConfig(
+                      dnsZoneName,
+                      builderContext.getProperty("dnsNetwork")
                           .stream()
                           .findAny()
+                          .map(MachineNetworkName::new)
                           .orElseThrow(() -> new MachineBuildingException(
-                              "Undefined HTTP admin user name")))));
-          return new MachineBuilderResultDefinition()
-              .withFacet(domainNamedFacetFactory.getFacet(
-                  builderContext,
-                  builderContext.getProperty("dnsNetwork")
-                      .stream()
-                      .findAny()
-                      .map(MachineNetworkName::new)
-                      .orElseThrow(() -> new MachineBuildingException(
-                          "Undefined DNS network name")),
-                  webServerFacet::getServerName))
-              .withFacet(webServerFacet);
+                              "Undefined DNS network name")),
+                      builderContext.getProperty("dnsNetwork")
+                          .stream()
+                          .collect(Collectors.toSet())))))
+              .withFacet(webServerFacetFactory.getFacet(
+                  shellProvider.getConnectionFactory(
+                      builderContext,
+                      new StandaloneIndentityShellUser(
+                          HTTP_ADMIN_USER,
+                          builderContext.getProperty("shellAdminUser")
+                              .stream()
+                              .findAny()
+                              .orElseThrow(() -> new MachineBuildingException(
+                                  "Undefined HTTP admin user name"))))));
         });
   }
 }

@@ -36,10 +36,6 @@ public class WebServerFacet {
     this.privateKeyPath = requireNonNull(privateKeyPath);
   }
 
-  public String getServerName() {
-    return serverName;
-  }
-
   public boolean isCertificateEmpty() {
     try (MachineShellConnection connection = connectionFactory.getConnection(HTTP_ADMIN_USER)) {
       return !connection.execute(new FileExistsCommand(certificatePath));

@@ -1,6 +1,7 @@
 package com.github.codeteapot.jmibeans.examples.httpcert;
 
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 
 import com.github.codeteapot.jmibeans.machine.MachineAgent;
 import com.github.codeteapot.jmibeans.machine.MachineNetworkAddressBinding;
@@ -22,6 +23,7 @@ import com.github.codeteapot.jmibeans.shell.client.secutity.auth.user.MachineShe
 import com.github.codeteapot.jmibeans.shell.client.secutity.auth.user.MachineShellUserRepository;
 import com.github.codeteapot.jmibeans.shell.mutable.MachineShellConnectionFactoryLifecycle;
 import com.github.codeteapot.jmibeans.shell.mutable.MutableAddressMachineShellConectionFactory;
+import java.beans.PropertyChangeListenerProxy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -65,6 +67,16 @@ public class SimpleShellProvider {
   public MachineShellConnectionFactory getConnectionFactory(
       MachineBuilderContext builderContext,
       MachineShellUserRepository userRepository) throws MachineBuildingException {
+    MachineAgent agent = builderContext.getAgent();
+    MachineNetworkAddressBinding addressBinding = new MachineNetworkAddressBinding(
+        builderContext.getProperty("shellNetwork")
+            .stream()
+            .findAny()
+            .map(MachineNetworkName::new)
+            .orElseThrow(() -> new MachineBuildingException("Undefined shell network")),
+        agent.getNetworks());
+    builderContext.addDisposeAction(() -> agent.removePropertyChangeListener(addressBinding));
+    agent.addPropertyChangeListener(addressBinding);
     MutableAddressMachineShellConectionFactory conectionFactory =
         new MutableAddressMachineShellConectionFactory(
             new MachineShellConnectionFactoryLifecycle<>(
@@ -78,17 +90,12 @@ public class SimpleShellProvider {
                         .orElse(null),
                     new MachineShellAuthorizedUsers(userRepository))),
                 PoolingMachineShellConnectionFactory::cleanup));
-    MachineNetworkAddressBinding addressBinding = new MachineNetworkAddressBinding(
-        builderContext.getProperty("shellNetwork")
-            .stream()
-            .findAny()
-            .map(MachineNetworkName::new)
-            .orElseThrow(() -> new MachineBuildingException("Undefined shell network")),
-        conectionFactory::setAddress);
-    MachineAgent agent = builderContext.getAgent();
-    addressBinding.update(agent.getNetworks());
-    builderContext.addDisposeAction(() -> agent.removePropertyChangeListener(addressBinding));
-    agent.addPropertyChangeListener(addressBinding);
+    conectionFactory.setAddress(addressBinding.getAddress().orElse(null));
+    addressBinding.addPropertyChangeListener(new PropertyChangeListenerProxy("address", event -> {
+      conectionFactory.setAddress(ofNullable(event.getNewValue())
+          .map(InetAddress.class::cast)
+          .orElse(null));
+    }));
     return conectionFactory;
   }
 
