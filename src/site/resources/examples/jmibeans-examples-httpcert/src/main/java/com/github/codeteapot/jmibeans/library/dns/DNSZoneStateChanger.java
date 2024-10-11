@@ -6,19 +6,19 @@ import com.github.codeteapot.jmibeans.platform.MachineRef;
 import com.github.codeteapot.jmibeans.platform.PlatformContext;
 import java.util.function.Consumer;
 
-class DomainZoneStateChanger {
+class DNSZoneStateChanger {
 
-  private final Consumer<DomainZoneState> changeStateAction;
+  private final Consumer<DNSZoneState> changeStateAction;
 
-  DomainZoneStateChanger(Consumer<DomainZoneState> changeStateAction) {
+  DNSZoneStateChanger(Consumer<DNSZoneState> changeStateAction) {
     this.changeStateAction = requireNonNull(changeStateAction);
   }
 
   void available(PlatformContext context, String name, MachineRef serverRef) {
-    changeStateAction.accept(new DomainZoneAvailableState(this, context, name, serverRef));
+    changeStateAction.accept(new DNSZoneAvailableState(this, context, name, serverRef));
   }
 
   void unavailable(PlatformContext context, String name) {
-    changeStateAction.accept(new DomainZoneUnavailableState(this, context, name));
+    changeStateAction.accept(new DNSZoneUnavailableState(this, context, name));
   }
 }

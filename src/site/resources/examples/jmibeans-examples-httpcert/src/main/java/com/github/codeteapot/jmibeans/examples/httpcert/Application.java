@@ -9,6 +9,7 @@ import static com.github.codeteapot.jmibeans.library.dns.catalog.DNSServerFacetF
 import static com.github.codeteapot.jmibeans.platform.Machine.facetFilter;
 import static com.github.codeteapot.jmibeans.platform.Machine.facetGet;
 import static java.lang.Runtime.getRuntime;
+import static java.util.Collections.singleton;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.Executors.newCachedThreadPool;
@@ -46,7 +47,6 @@ import com.github.codeteapot.jmibeans.port.docker.DockerTarget;
 import com.github.codeteapot.jmibeans.port.docker.role.DirectMappingDockerProfileResolver;
 import com.github.codeteapot.jmibeans.profile.MachineBuilderResultDefinition;
 import com.github.codeteapot.jmibeans.profile.MachineBuildingException;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Logger;
@@ -191,7 +191,7 @@ public class Application implements PlatformListener {
           return new MachineBuilderResultDefinition()
               .withFacet(dnsHostFacetFactory.getFacet(
                   builderContext,
-                  Collections.singleton(new DNSHostConfig(
+                  singleton(new DNSHostConfig(
                       dnsZoneName,
                       builderContext.getProperty("dnsNetwork")
                           .stream()
@@ -199,7 +199,7 @@ public class Application implements PlatformListener {
                           .map(MachineNetworkName::new)
                           .orElseThrow(() -> new MachineBuildingException(
                               "Undefined DNS network name")),
-                      builderContext.getProperty("dnsNetwork")
+                      builderContext.getProperty("dnsHostName")
                           .stream()
                           .collect(Collectors.toSet())))))
               .withFacet(webServerFacetFactory.getFacet(

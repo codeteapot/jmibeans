@@ -13,11 +13,11 @@ import com.github.codeteapot.jmibeans.platform.event.PlatformListener;
 public class DNSResolver implements PlatformListener {
 
   private final PlatformContext context;
-  private final DomainZone zone;
+  private final DNSZone zone;
 
   public DNSResolver(PlatformContext context, String zoneName) {
     this.context = requireNonNull(context);
-    zone = new DomainZone(context, zoneName);
+    zone = new DNSZone(context, zoneName);
   }
 
   @Override
@@ -27,8 +27,7 @@ public class DNSResolver implements PlatformListener {
         .ifPresent(serverFacet -> zone.available(event.getMachineRef(), serverFacet));
     context.lookup(event.getMachineRef())
         .flatMap(Machine.facetGet(DNSHostFacet.class))
-        .flatMap(hostFacet -> hostFacet.getHost(zone.getName()))
-        .ifPresent(host -> zone.available(event.getMachineRef(), host));
+        .ifPresent(hostFacet -> zone.available(event.getMachineRef(), hostFacet));
   }
 
   @Override

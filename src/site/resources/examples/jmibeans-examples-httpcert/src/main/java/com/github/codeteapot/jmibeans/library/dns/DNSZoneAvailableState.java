@@ -2,20 +2,20 @@ package com.github.codeteapot.jmibeans.library.dns;
 
 import static java.util.Objects.requireNonNull;
 
-import com.github.codeteapot.jmibeans.library.dns.catalog.DNSHost;
+import com.github.codeteapot.jmibeans.library.dns.catalog.DNSHostFacet;
 import com.github.codeteapot.jmibeans.library.dns.catalog.DNSServerFacet;
 import com.github.codeteapot.jmibeans.platform.MachineRef;
 import com.github.codeteapot.jmibeans.platform.PlatformContext;
 import java.util.HashSet;
 import java.util.Set;
 
-class DomainZoneAvailableState extends DomainZoneState {
+class DNSZoneAvailableState extends DNSZoneState {
 
   private final MachineRef serverRef;
-  private final Set<DomainHost> registeredHosts;
+  private final Set<DNSReferencedHost> registeredHosts;
 
-  DomainZoneAvailableState(
-      DomainZoneStateChanger stateChanger,
+  DNSZoneAvailableState(
+      DNSZoneStateChanger stateChanger,
       PlatformContext context,
       String name,
       MachineRef serverRef) {
@@ -24,31 +24,19 @@ class DomainZoneAvailableState extends DomainZoneState {
     registeredHosts = new HashSet<>();
   }
 
-  @Deprecated
-  private boolean hasServerRef(MachineRef machineRef) {
-    return serverRef.equals(machineRef);
-  }
-
-  @Deprecated
-  private boolean hasNotRegisteredHostRef(MachineRef machineRef) {
-    return registeredHosts.stream()
-        .map(DomainHost::getMachineRef)
-        .noneMatch(machineRef::equals);
-  }
-
   @Override
-  public void available(MachineRef serverRef, DNSServerFacet serverFacet) {
+  void available(MachineRef serverRef, DNSServerFacet serverFacet) {
     throw new IllegalStateException("Already available");
   }
 
   @Override
-  void available(MachineRef hostRef, DNSHost host) {
+  void available(MachineRef hostRef, DNSHostFacet hostFacet) {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public void lost(MachineRef machineRef) {
+  void lost(MachineRef machineRef) {
     if (serverRef.equals(machineRef)) {
       stateChanger.unavailable(context, name);
     } else {
@@ -59,7 +47,19 @@ class DomainZoneAvailableState extends DomainZoneState {
     }
   }
 
-  private void hostLost(DomainHost host) {
+  private void hostLost(DNSReferencedHost host) {
     // TODO ...
+  }
+
+  @Deprecated
+  private boolean hasServerRef(MachineRef machineRef) {
+    return serverRef.equals(machineRef);
+  }
+
+  @Deprecated
+  private boolean hasNotRegisteredHostRef(MachineRef machineRef) {
+    return registeredHosts.stream()
+        .map(DNSReferencedHost::getMachineRef)
+        .noneMatch(machineRef::equals);
   }
 }

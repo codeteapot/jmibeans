@@ -8,6 +8,7 @@ import com.github.codeteapot.jmibeans.machine.MachineNetworkName;
 import com.github.codeteapot.jmibeans.profile.MachineBuilderContext;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 public class DNSHostConfig {
 
@@ -26,17 +27,20 @@ public class DNSHostConfig {
       MachineBuilderContext builderContext) {
     return new DNSHost(
         zoneName,
-        addressBindingMap.computeIfAbsent(networkName, key -> createAddressBinding(builderContext)),
+        addressBindingMap.computeIfAbsent(networkName, newAddressBinding(builderContext)),
         names);
   }
 
-  private MachineNetworkAddressBinding createAddressBinding(MachineBuilderContext builderContext) {
-    MachineAgent agent = builderContext.getAgent();
-    MachineNetworkAddressBinding addressBinding = new MachineNetworkAddressBinding(
-        networkName,
-        agent.getNetworks());
-    builderContext.addDisposeAction(() -> agent.removePropertyChangeListener(addressBinding));
-    agent.addPropertyChangeListener(addressBinding);
-    return addressBinding;
+  private static Function<MachineNetworkName, MachineNetworkAddressBinding> newAddressBinding(
+      MachineBuilderContext builderContext) {
+    return networkName -> {
+      MachineAgent agent = builderContext.getAgent();
+      MachineNetworkAddressBinding addressBinding = new MachineNetworkAddressBinding(
+          networkName,
+          agent.getNetworks());
+      builderContext.addDisposeAction(() -> agent.removePropertyChangeListener(addressBinding));
+      agent.addPropertyChangeListener(addressBinding);
+      return addressBinding;
+    };
   }
 }

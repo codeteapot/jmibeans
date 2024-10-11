@@ -1,41 +1,37 @@
 package com.github.codeteapot.jmibeans.library.dns;
 
-import com.github.codeteapot.jmibeans.library.dns.catalog.DNSHost;
+import com.github.codeteapot.jmibeans.library.dns.catalog.DNSHostFacet;
 import com.github.codeteapot.jmibeans.library.dns.catalog.DNSServerFacet;
 import com.github.codeteapot.jmibeans.platform.MachineRef;
 import com.github.codeteapot.jmibeans.platform.PlatformContext;
 import java.util.function.Consumer;
 
-class DomainZone {
+class DNSZone {
 
-  private DomainZoneState state;
+  private DNSZoneState state;
 
-  DomainZone(PlatformContext context, String name) {
+  DNSZone(PlatformContext context, String name) {
     state = initialState(newState -> state = newState, context, name);
-  }
-  
-  String getName() {
-    return state.name;
   }
 
   void available(MachineRef serverRef, DNSServerFacet serverFacet) {
     state.available(serverRef, serverFacet);
   }
 
-  void available(MachineRef hostRef, DNSHost host) {
-    state.available(hostRef, host);
+  void available(MachineRef hostRef, DNSHostFacet hostFacet) {
+    state.available(hostRef, hostFacet);
   }
 
   void lost(MachineRef machineRef) {
     state.lost(machineRef);
   }
 
-  private static DomainZoneState initialState(
-      Consumer<DomainZoneState> changeStateAction,
+  private static DNSZoneState initialState(
+      Consumer<DNSZoneState> changeStateAction,
       PlatformContext context,
       String name) {
-    return new DomainZoneUnavailableState(
-        new DomainZoneStateChanger(changeStateAction),
+    return new DNSZoneUnavailableState(
+        new DNSZoneStateChanger(changeStateAction),
         context,
         name);
   }
